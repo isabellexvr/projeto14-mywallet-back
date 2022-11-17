@@ -22,7 +22,7 @@ export const usersCollection = db.collection("users");
 
 app.post("/sign-up", register);
 
-//app.post("/sign-in", login);
+app.post("/sign-in", login);
 
 app.listen(5000, () => {
   console.log("Server is running in port 5000");
