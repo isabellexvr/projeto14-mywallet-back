@@ -1,6 +1,9 @@
-import { usersCollection } from "../app.js";
+import { usersCollection, sessionsCollection } from "../app.js";
 import joi from "joi";
 import bcrypt from "bcrypt";
+import { v4 as uuid } from "uuid";
+
+const token = uuid();
 
 const userSchema = joi.object({
   name: joi.string().required().min(3),
@@ -43,10 +46,16 @@ export async function login(req, res) {
       return res.status(422).send("Usuário ainda não registrado!");
     }
     const verifyPassword = bcrypt.compareSync(password, userExists.password);
-    if (!verifyPassword){
-        return res.status(401).send("Senha incorreta.")
+    if (!verifyPassword) {
+      return res.status(401).send("Senha incorreta.");
     } else {
-        res.status(200).send("Login feito com sucesso!")
+      await sessionsCollection.insertOne({
+        userId: userExists._id,
+        token,
+      });
+      res.status(200).send("Login feito com sucesso!");
     }
-  } catch (err) {}
+  } catch (err) {
+    console.log(err)
+  }
 }

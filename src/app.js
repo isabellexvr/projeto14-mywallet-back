@@ -3,11 +3,13 @@ import cors from "cors";
 import { MongoClient, ObjectId } from "mongodb";
 import { register, login } from "./controllers/authController.js";
 import dotenv from "dotenv";
-dotenv.config()
 
+
+dotenv.config();
 const app = express();
 app.use(cors());
 app.use(json());
+
 
 const mongoClient = new MongoClient(process.env.MONGO_URI);
 
@@ -18,6 +20,7 @@ try {
 }
 
 const db = mongoClient.db("myWallet");
+export const sessionsCollection = db.collection("sessions");
 export const usersCollection = db.collection("users");
 
 app.post("/sign-up", register);
