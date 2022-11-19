@@ -1,22 +1,8 @@
-import { usersCollection, sessionsCollection } from "../app.js";
-import joi from "joi";
+import { usersCollection, sessionsCollection } from "../database/db.js";
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
 
-const token = uuid();
-
-const userSchema = joi.object({
-  name: joi.string().required().min(3),
-  email: joi.string().email().required(),
-  password: joi.string().required().min(4),
-});
-
-export async function register(req, res) {
-  const { error } = userSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    const errors = error.details.map((detail) => detail.message);
-    return res.send(errors);
-  }
+export async function signUp(req, res) {
   const { name, email, password } = req.body;
   try {
     const nameExists = await usersCollection.findOne({ name: name });
@@ -37,11 +23,11 @@ export async function register(req, res) {
   }
 }
 
-export async function login(req, res) {
-  const { name, password } = req.body;
+export async function signIn(req, res) {
+  const { email, password } = req.body;
 
   try {
-    const userExists = await usersCollection.findOne({ name: name });
+    const userExists = await usersCollection.findOne({ email });
     if (!userExists) {
       return res.status(422).send("Usuário ainda não registrado!");
     }
@@ -49,13 +35,17 @@ export async function login(req, res) {
     if (!verifyPassword) {
       return res.status(401).send("Senha incorreta.");
     } else {
+      const token = uuid();
       await sessionsCollection.insertOne({
         userId: userExists._id,
-        token,
+        token: token,
       });
-      res.status(200).send("Login feito com sucesso!");
+      res.status(200).send({
+        token,
+        message: "Login realizado com sucesso!",
+      });
     }
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
 }
