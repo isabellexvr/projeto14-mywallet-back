@@ -43,6 +43,7 @@ export async function signIn(req, res) {
       res.status(200).send({
         token,
         message: "Login realizado com sucesso!",
+        name: userExists.name
       });
     }
   } catch (err) {
